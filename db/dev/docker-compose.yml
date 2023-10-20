@@ -1,0 +1,16 @@
+services:
+  spark-db-dev:
+    container_name: spark-db-dev
+    image: postgres:15.4-alpine
+    volumes: 
+      - db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=spark
+volumes:
+  db:
+    driver: local
+

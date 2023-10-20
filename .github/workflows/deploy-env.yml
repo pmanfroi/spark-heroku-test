@@ -1,0 +1,71 @@
+# This job copies the .env file to the EC2 instance
+# it should be run only when the .env file/github secrets are updated
+name: Deploy env variables to EC2
+on:
+  push:
+    branches:
+      - dev
+jobs:
+  deploy_env_to_ec2:
+    name: Deploy env variables
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    env:
+      AWS_INSTANCE_SG_ID: ${{ secrets.AWS_INSTANCE_SG_ID }} # EC2 Instance > Networking > Security Groups > sg-[id]
+    steps:
+      - name: Checking out the repository
+        uses: actions/checkout@v3
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} # IAM > Users > User > Access key
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # IAM > Users > User > Access key (show only during creation)
+          aws-region: ${{ secrets.AWS_REGION }} # EC2 Instance region
+      - name: Set permissions for private key # .pem file is generated during EC2 instance creation
+        run: |
+          echo "${{ secrets.AWS_PRIVATE_KEY }}" > key.pem 
+          chmod 600 key.pem
+      - name: Set secrets to .env file
+        run: |
+          touch ./dev/.env.production
+          ENV_FILE=./dev/.env.production
+
+          echo "COGNITO_USER_POOL_ID=${{ secrets.COGNITO_USER_POOL_ID }}" >> "$ENV_FILE"
+          echo "COGNITO_CLIENT_ID=${{ secrets.COGNITO_CLIENT_ID }}" >> "$ENV_FILE"
+
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> "$ENV_FILE"
+          echo "AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY_ID }}" >> "$ENV_FILE"
+          echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> "$ENV_FILE"
+
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> "$ENV_FILE"
+
+          echo "APP_BACKEND_PORT=${{ secrets.APP_BACKEND_PORT }}" >> "$ENV_FILE"
+          echo "APP_BACKEND_HOST=${{ secrets.APP_BACKEND_HOST }}" >> "$ENV_FILE"
+
+          echo "DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}" >> "$ENV_FILE"
+          echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> "$ENV_FILE"
+          echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> "$ENV_FILE"
+          echo "DATABASE_HOST=${{ secrets.DATABASE_HOST }}" >> "$ENV_FILE"
+          echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> "$ENV_FILE"
+
+          echo "ML_LOAD_PROBLEM_SUMMARY_AT_STARTUP=${{ vars.ML_LOAD_PROBLEM_SUMMARY_AT_STARTUP }}" >> "$ENV_FILE"
+          echo "DATA_LOAD_SAMPLE_DATA_AT_STARTUP=${{ vars.DATA_LOAD_SAMPLE_DATA_AT_STARTUP }}" >> "$ENV_FILE"
+
+          echo "APP_WEB_CLIENT_CONTAINER_PORT=${{ secrets.APP_WEB_CLIENT_CONTAINER_PORT }}" >> "$ENV_FILE"
+          echo "APP_WEB_CLIENT_EXTERNAL_PORT=${{ secrets.APP_WEB_CLIENT_EXTERNAL_PORT }}" >> "$ENV_FILE"
+
+          echo "VITE_APP_BACKEND_PORT=${{ secrets.VITE_APP_BACKEND_PORT }}" >> "$ENV_FILE"
+          echo "VITE_APP_BACKEND_HOST=${{ secrets.VITE_APP_BACKEND_HOST }}" >> "$ENV_FILE"
+
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> "$ENV_FILE"
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> "$ENV_FILE"
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> "$ENV_FILE"
+
+      - name: Copy .env file to EC2
+        run: |
+          scp -i key.pem -o StrictHostKeyChecking=no ./dev/.env.production ec2-user@ec2-3-144-222-101.us-east-2.compute.amazonaws.com:/home/ec2-user/.env
+      - name: Delete .env file
+        run: |
+          rm ./dev/.env.production

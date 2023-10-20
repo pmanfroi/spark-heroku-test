@@ -1,0 +1,40 @@
+# This job installs Node, Yarn, and Docker Compose on an EC2 instance
+# it should be run only once per EC2 instance before the deploy-ec2.yml workflow
+name: Install Dependencies to EC2
+on:
+  push:
+    branches:
+      - dev
+jobs:
+  install_dependencies:
+    name: Install dependencies
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    env:
+      AWS_INSTANCE_SG_ID: ${{ secrets.AWS_INSTANCE_SG_ID }} # EC2 Instance > Networking > Security Groups > sg-[id]
+    steps:
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} # IAM > Users > User > Access key
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # IAM > Users > User > Access key (show only during creation)
+          aws-region: ${{ secrets.AWS_REGION }} # EC2 Instance region
+      - name: Set permissions for private key # .pem file is generated during EC2 instance creation
+        run: |
+          echo "${{ secrets.AWS_PRIVATE_KEY }}" > key.pem 
+          chmod 600 key.pem
+      - name: Install Node
+        run: |
+          ssh -i key.pem -o StrictHostKeyChecking=no ec2-user@ec2-3-144-222-101.us-east-2.compute.amazonaws.com 'curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh | bash'
+          . ~/.nvm/nvm.sh
+          nvm install 18.14.0
+          nvm use 18.14.0
+      - name: Install Yarn
+        run: |
+          npm install -g yarn
+          yarn --version
+      - name: Install Docker Compose
+        run: |
+          ssh -i key.pem -o StrictHostKeyChecking=no ec2-user@ec2-3-144-222-101.us-east-2.compute.amazonaws.com "curl -L 'https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)' -o ~/docker-compose && chmod +x ~/docker-compose && sudo mv ~/docker-compose /usr/local/bin/docker-compose && docker-compose --version"

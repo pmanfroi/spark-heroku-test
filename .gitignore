@@ -1,0 +1,65 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# builds / dependencies
+node_modules
+/.pnp
+.pnp.js
+build
+dist
+.env-production
+
+# testing
+coverage
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+*.log
+npm-debug.log*
+
+# local env files
+.env*.local
+.env
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# eslint
+.eslintcache
+backend/.eslintcache
+
+# vite
+.vite
+
+# yarn stuff
+yarn-debug.log*
+yarn-error.log*
+.yarn/*.gz
+
+backend/.pnp.*
+backend/.yarn/*
+!backend/.yarn/releases
+!backend/.yarn/patches
+!backend/.yarn/plugins
+!backend/.yarn/releases
+!backend/.yarn/sdks
+!backend/.yarn/versions
+!backend/.eslintcache
+
+web-client/.pnp.*
+web-client/.yarn/*
+!web-client/.yarn/releases
+!web-client/.yarn/patches
+!web-client/.yarn/plugins
+!web-client/.yarn/releases
+!web-client/.yarn/sdks
+!web-client/.yarn/versions
+
+# ephimeral working files
+./test/thunder-tests/thunderActivity.json
+
+.idea
+

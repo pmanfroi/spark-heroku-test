@@ -1,0 +1,53 @@
+services:
+  app-dev-server:
+    container_name: spark-server-dev
+    image: node:18.14.0
+    volumes:
+      - ../backend:/spark-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      - spark-db-server-dev
+    environment:
+      - DATABASE_USERNAME=${DATABASE_USERNAME}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}
+      - COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - APP_BACKEND_PORT=${APP_BACKEND_PORT}
+      - APP_BACKEND_HOST=${APP_BACKEND_HOST}
+      - ML_LOAD_PROBLEM_SUMMARY_AT_STARTUP=${ML_LOAD_PROBLEM_SUMMARY_AT_STARTUP}
+      - DATA_LOAD_SAMPLE_DATA_AT_STARTUP=${DATA_LOAD_SAMPLE_DATA_AT_STARTUP}
+    working_dir: /spark-server
+    entrypoint: sh -c "yarn install && yarn build && yarn dev"
+  app-dev-client:
+    image: node:18.14.0
+    ports:
+      - "4444:4444"
+    volumes:
+      - ../web-client:/app-client
+    working_dir: /app-client
+    entrypoint: sh -c "yarn install && yarn build && yarn dev"
+    environment:
+      - VITE_APP_BACKEND_PORT=${VITE_APP_BACKEND_PORT}
+      - VITE_APP_BACKEND_HOST=${VITE_APP_BACKEND_HOST}
+  spark-db-server-dev:
+    image: postgres:15.4-alpine
+    container_name: spark-db-server-dev
+    volumes:
+      - db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+volumes:
+  db:
+    driver: local

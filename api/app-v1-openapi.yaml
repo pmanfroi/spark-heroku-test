@@ -1,0 +1,403 @@
+openapi: 3.0.3
+info:
+  title: Spark API
+  version: "1.0.0"
+  description: Spark API
+servers:
+  - description: Local
+    url: http://localhost:8888/spark/v1
+  - description: The Lab
+    url: http://app.10glab.cablelabs.com:8888/spark/v1
+tags:
+  - name: Samples
+    description: |
+      Create and manage samples
+
+security:
+  - bearerAuth: []
+  - oAuth2:
+      - app:sample:read
+      - app:sample:write
+      - ts.application.ro ts.mec.fullaccess
+      - ts.application.ro ts.mec.limitaccess
+paths:
+  "/sample":
+    post:
+      tags:
+        - Samples
+      summary: Create a sample
+      description: Creates a sample
+      operationId: create-sample
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/service_profile_create_update"
+        description:
+          The request body passes all of the needed parameters to create
+          a sample. Parameters will be edited here rather than the **Parameters**
+          section above. The `fieldRequired` and `options` parameters are both required
+          in the request body.
+        required: true
+      responses:
+        "200":
+          description: sample ID
+          content:
+            application/json:
+              schema:
+                title: PostServiceProfileResponse
+                $ref: "#/components/schemas/sample"
+                additionalProperties: false
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/Unexpected"
+    get:
+      tags:
+        - Samples
+      summary: List all samples registered under your API key
+      description: List all samples registered under your API key
+      operationId: get-service-profiles
+      responses:
+        "200":
+          description: A comma delimited list of all the samples registered
+            under your API key
+          content:
+            application/json:
+              schema:
+                title: GetSamplesResponse
+                type: object
+                properties:
+                  status:
+                    type: string
+                    maxLength: 32
+                    pattern: "^[A-Za-z0-9]{3,32}$"
+                    example: Success
+                  serviceProfiles:
+                    type: array
+                    maxItems: 100
+                    items:
+                      $ref: "#/components/schemas/sample"
+                additionalProperties: false
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/Unexpected"
+  "/sample/{sampleId}":
+    parameters:
+      - name: sampleId
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/types_resource_id"
+    get:
+      tags:
+        - Samples
+      summary: Fetch a sample
+      description: Returns a specified sample.
+      operationId: get-sample-by-Id
+      responses:
+        "200":
+          description: Requested sample
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/sample"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/Unexpected"
+    put:
+      tags:
+        - Samples
+      summary: Update a Sample
+      description: Update the definition of a Sample.
+      operationId: update-sample
+      requestBody:
+        description:
+          The request body passes the rest of the needed parameters to
+          create a sample. Parameters other than `sampleId` will
+          be edited here rather than the **Parameters** section above.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/sample_create_update"
+        required: true
+      responses:
+        "200":
+          description: Update a sample
+          content:
+            application/json:
+              schema:
+                title: UpdateSampleResponse
+                $ref: "#/components/schemas/sample"
+                additionalProperties: false
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/Unexpected"
+    delete:
+      tags:
+        - Samples
+      summary: Delete a Sample
+      description: Delete Sample based on unique sample ID
+      operationId: delete-sample
+      responses:
+        "200":
+          description: Delete a sample
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/types_delete_response_oe"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/Unexpected"
+components:
+  schemas:
+    sampleId:
+      type: object
+      properties:
+        sampleId:
+          type: string
+      description: sample identifier
+    service_profile_create_update:
+      type: object
+      properties:
+        fieldRequired: # [OEC] added for web client friendliness
+          $ref: "#/components/schemas/types_resource_name"
+          example: "Foo"
+        Options:
+          type: string
+          enum:
+            - Option1
+            - Option2
+            - Option3
+          description: Some options.
+        fieldOptional: # [OEC] ?
+          type: string
+          maxLength: 32
+          pattern: "^[A-Za-z0-9]{3,32}$"
+          description: Optional field
+      required:
+        - fieldRequired
+      additionalProperties: false
+    sample:
+      type: object
+      properties:
+        id: # [OEC] instead of sampleId
+          $ref:
+            "#/components/schemas/types_resource_id" # [OEC] instead of inline `type: string,  maxLength: 32, pattern: "^[A-Za-z0-9]{3,32}$"
+            # [EOC] Camara: id's are unrestricted string
+        fieldRequired: # [OEC] added for web client friendliness
+          $ref: "#/components/schemas/types_resource_name"
+          example: "Foo"
+        options:
+          type: string
+          enum:
+            - Option1
+            - Option2
+            - Option3
+          description: Some options
+        fieldOptional:
+          type: string
+          maxLength: 32
+          pattern: "^[A-Za-z0-9]{3,32}$"
+          description: Some optional field
+      required:
+        - fieldRequired
+      additionalProperties: false
+    # SPS
+    # TODO: content of applicaiton schema needs further investigation
+    types_sample_Id:
+      description: Unique identifier for a sample
+      type: string
+      readOnly: false
+      additionalProperties: false
+    # [OEC] are the mins/max's defined below OK?
+    types_networkResources:
+      type: object
+      properties:
+        minBandwidthKbits:
+          type: integer
+          minimum: 1
+          maximum: 1000000
+          format: int32
+          description: Minimum required connection bandwidth in Kbit/s for the application
+          example: 1
+        serviceContinuitySupport:
+          type: boolean
+          description:
+            Indicates if service continuity support is required or not for the
+            application.
+          example: "true"
+        maxRequestRate:
+          type: integer
+          minimum: 1
+          maximum: 100
+          format: int32
+          description: Maximum request rate that the application can handle
+          example: 1
+        maxLatencyMs:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          format: int32
+          description:
+            "Maximum response time or latency that the application can handle,
+            in milliseconds. Note: this value must be in multiples of 5"
+          example: 5
+        minAvailability:
+          type: integer
+          minimum: 1
+          maximum: 100
+          format: int32
+          description: Minimum availability required for the server
+          example: 1
+      additionalProperties: false
+    types_delete_response_oe:
+      type: object
+      properties:
+        status:
+          type: string
+          maxLength: 80
+        message:
+          type: string
+          maxLength: 80
+        deletedResourceId:
+          $ref: "#/components/schemas/types_resource_id"
+      additionalProperties: false
+    types_error:
+      type: object
+      properties:
+        status:
+          type: string
+          maxLength: 160
+        message:
+          type: string
+          maxLength: 160
+        data:
+          type: string
+          maxLength: 32
+          pattern: "^[A-Za-z0-9]{3,32}$"
+          example: string (this field is optional and may or may not be returned)
+      required:
+        - status
+        - message
+      # - data
+      additionalProperties: false
+    types_success:
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 32
+          pattern: "^[A-Za-z0-9]{3,32}$"
+        message:
+          type: string
+          maxLength: 32
+          pattern: "^[A-Za-z0-9]{3,32}$"
+        data:
+          type: string
+          maxLength: 32
+          pattern: "^[A-Za-z0-9]{3,32}$"
+      required:
+        - code
+        - message
+        - data
+      additionalProperties: false
+    types_UEIdentityType:
+      description: Type of User Equipment identifier used in `UEIdentity`.
+      type: string
+      enum:
+        - IPAddress
+    # - MSISDN [OEC] Camara also includes this as UEIdentityType
+    # - IMEI   [OEC] Camara also includes this as UEIdentityType
+    # - MDN    [OEC] Camara also includes this as UEIdentityType
+    # - GPSI   [OEC] Camara also includes this as UEIdentityType
+    types_UEIdentity:
+      description:
+        The identifier value for User Equipment. The type of identifier
+        is defined by the 'UEIdentityType' parameter. The`IPAddress`format can be
+        IPv4 or IPv6.
+      type: string
+      oneOf: # [OEC] changed from `ipv6`, allow both v4 and v6 (no format in camara)
+        - format: ipv4
+        - format: ipv6
+      example: 2600:1010:b1d0:0000:0000:0000:0000:0012 # [OEC] NOTE ipv6 addresses must be url encoded
+  parameters: # [OEC] becuase ":" is an illegal query parameter chacter
+    sampleId:
+      name: sampleId
+      description: sample identifier
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/types_resource_id"
+    UEIdentityType:
+      name: UEIdentityType
+      description: Type of User Equipment identifier used in `UEIdentity`.
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/types_UEIdentityType"
+    UEIdentity:
+      name: UEIdentity
+      description:
+        The identifier value for User Equipment. The type of identifier
+        is defined by the 'UEIdentityType' parameter. The`IPAddress`format can be
+        IPv4 or IPv6.
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/types_UEIdentity"
+
+  responses:
+    OK:
+      description: HTTP 200 OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/types_success"
+    Created:
+      description: HTTP 201 Created
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/types_success"
+    NoContent:
+      description: HTTP 204 No Content
+    BadRequest:
+      description: HTTP 400 Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/types_error"
+    Unauthorized:
+      description: HTTP 401 Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/types_error"
+    Unexpected:
+      description: HTTP 500 Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/types_error"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description:
+        This is where the `access_token` from [Getting Started page](https://{aem_host}/business/app-portal/documentation/app-discovery-service/get-started.html)
+        is entered.

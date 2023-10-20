@@ -1,0 +1,9 @@
+services:
+  app-dev-client:
+    image: node:18.14.0
+    ports:
+      - "4444:4444"
+    volumes:
+      - ..:/app-client
+    working_dir: /app-client
+    entrypoint: sh -c "yarn install && yarn build && yarn dev"

@@ -1,0 +1,18 @@
+[
+  {
+    "_id": "2c3cee74-c2eb-4ce1-bd14-e8d994566dc3",
+    "colName": "Spark",
+    "created": "2023-02-22T23:12:01.771Z",
+    "sortNum": 10000,
+    "folders": [
+      {
+        "_id": "1514c59b-58a0-4d6e-9383-e8cb671cd094",
+        "name": "Sample",
+        "containerId": "",
+        "created": "2023-02-23T19:17:42.401Z",
+        "sortNum": 10000,
+        "settings": {}
+      }
+    ]
+  }
+]

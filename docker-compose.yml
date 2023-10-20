@@ -1,0 +1,37 @@
+services:
+  spark-server:
+    container_name: spark-server
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    depends_on:
+      - spark-db-server
+    environment:
+      - DATABASE_USERNAME=postgres
+      - DATABASE_NAME=spark
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_HOST=spark-db-server
+      - DATABASE_PORT=5432
+  spark-client:
+    container_name: spark-client
+    build:
+      context: web-client
+      dockerfile: Dockerfile
+    ports:
+      - "4444:4444"
+  spark-db-server:
+    container_name: spark-db-server
+    image: postgres:15.4-alpine
+    volumes: 
+      - db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=spark
+volumes:
+  db:
+    driver: local
