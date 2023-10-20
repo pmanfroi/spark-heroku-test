@@ -83,7 +83,7 @@ export const makeRestClient = (serverConfig: ServerConfigType) => {
     serverConfig,
     axiosClient: axios.create({
       baseURL: serverConfig?.defaultBaseUrl,
-      timeout: serverConfig?.timeout || 5000,
+      timeout: serverConfig?.timeout,
     }),
   }
 

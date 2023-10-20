@@ -19,24 +19,43 @@ dotenv.config()
 export type DB = Sequelize
 
 export const getDB = async (): Promise<Sequelize> => {
-  const db = new Sequelize({
-    dialect: 'postgres',
-    username: process.env.DATABASE_USERNAME,
-    database: process.env.DATABASE_NAME,
-    password: process.env.DATABASE_PASSWORD,
-    host: process.env.DATABASE_HOST,
-    port: Number(process.env.DATABASE_PORT),
-    ssl: false,
-    logging: false,
-    typeValidation: true,
-    pool: {
-      max: 10,
-      min: 5,
-      acquire: 10000, // in ms, 10 seconds
-      idle: 60000, // in ms, 1 minute
-    },
-  })
-
+  let db: Sequelize
+  if (process.env.DATABASE_URL) {
+    // Setup for a managed instance of Postgres where we get the full DATABASE_URL
+    db = new Sequelize(process.env.DATABASE_URL, {
+      dialect: 'postgres',
+        dialectOptions: {
+          ssl: {
+            rejectUnauthorized: false,
+          },
+        },
+        typeValidation: true,
+        pool: {
+          max: 10,
+          min: 5,
+          acquire: 10000, // in ms, 10 seconds
+          idle: 60000, // in ms, 1 minute
+        },
+    })
+  } else {
+    db = new Sequelize({
+      dialect: 'postgres',
+      username: process.env.DATABASE_USERNAME,
+      database: process.env.DATABASE_NAME,
+      password: process.env.DATABASE_PASSWORD,
+      host: process.env.DATABASE_HOST,
+      port: Number(process.env.DATABASE_PORT),
+      ssl: false,
+      logging: false,
+      typeValidation: true,
+      pool: {
+        max: 10,
+        min: 5,
+        acquire: 10000, // in ms, 10 seconds
+        idle: 60000, // in ms, 1 minute
+      },
+    })  
+  }
   db.addModels([
     User,
     Problem,

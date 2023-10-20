@@ -1,7 +1,7 @@
 {
   "name": "app-server",
   "version": "1.0.0",
-  "description": "Nel Backend App Server",
+  "description": "Spark Backend App Server",
   "main": "index.js",
   "private": true,
   "author": "Steven Saunders",
@@ -56,8 +56,12 @@
     "lint-staged": "^14.0.1",
     "nodemon": "^2.0.20",
     "prettier": "^3.0.2",
+    "sequelize-cli": "^6.6.1",
     "ts-jest": "^29.0.5",
     "typescript": "^4.9.5"
+  },
+  "engines": {
+    "node": "^18.14.0"
   },
   "nodemonConfig": {
     "watch": [
@@ -85,6 +89,7 @@
     "test": "jest --detectOpenHandles",
     "test:watch": "jest --watchAll --detectOpenHandles",
     "start": "npx sequelize-cli db:migrate && node build/src/index.js",
+    "start-prod": "npx sequelize-cli db:migrate --env production && node build/src/index.js",
     "dev": "concurrently \"tsc --watch\" \"npx sequelize-cli db:migrate && nodemon --delay .5 -q build/src/index.js\"",
     "load:samples": "tsc && node build/src/loader/loadSampleData.js",
     "migrate": "npx sequelize-cli db:migrate",

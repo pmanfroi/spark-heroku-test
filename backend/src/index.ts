@@ -10,7 +10,7 @@ const startServer = async () => {
   // Load env vars from .env file
 
   const appConfig = {
-    port: process.env.APP_BACKEND_PORT || 8000,
+    port: process.env.APP_BACKEND_PORT || process.env.PORT || 8000
   }
 
   console.log('\nApp Configuration: ', appConfig)
