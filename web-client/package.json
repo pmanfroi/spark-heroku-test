@@ -73,8 +73,10 @@
     "dev": "vite --port 4444 --host",
     "build": "vite build",
     "start": "vite preview --port 4444 --host",
+    "start-prod": "vite preview",
     "format": "prettier --write \"**/*.ts\" \"**/*.tsx\"",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx ./src",
+    "heroku-postbuild": "./scripts/heroku.build",
     "tsc": "tsc --noEmit",
     "test": "jest"
   },
