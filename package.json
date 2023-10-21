@@ -1,0 +1,8 @@
+{
+  "name": "spark-heroku-package",
+  "version": "1.0.0",
+  "description": "This repo contains both the `web-client` and `backend` code (within directories of those same names)",
+  "engines": {
+    "node": "^18.14.0"
+  }
+}
